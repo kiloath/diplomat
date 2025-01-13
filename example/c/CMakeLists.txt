@@ -1,14 +1,23 @@
 cmake_minimum_required(VERSION 3.15)
-project(diplomat_example CXX)
+project(diplomat_example C)
 
+include(ExternalProject)
+ExternalProject_Add(
+        rust_code
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/..
+        CONFIGURE_COMMAND ""
+        BUILD_COMMAND cargo build
+        INSTALL_COMMAND ""
+)
 
+set(RUST_LIB_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../target/debug/diplomat_example.dll.lib")
 
-add_executable(diplomat_example src/diplomat_example.cpp src/main.cpp)
+add_executable(${PROJECT_NAME} main.c)
+target_link_libraries(${PROJECT_NAME} ${RUST_LIB_PATH})
 
-
-
-install(TARGETS diplomat_example DESTINATION "."
-        RUNTIME DESTINATION bin
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib
-        )
+add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../target/debug/diplomat_example.dll"
+        "${CMAKE_BINARY_DIR}"
+)
